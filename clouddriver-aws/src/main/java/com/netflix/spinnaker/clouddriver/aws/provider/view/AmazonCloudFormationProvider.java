@@ -16,7 +16,7 @@
 
 package com.netflix.spinnaker.clouddriver.aws.provider.view;
 
-import static com.netflix.spinnaker.clouddriver.aws.cache.Keys.Namespace.STACKS;
+import static com.netflix.spinnaker.clouddriver.aws.cache.Keys.Namespace.ON_DEMAND;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.spinnaker.cats.cache.Cache;
@@ -49,17 +49,17 @@ public class AmazonCloudFormationProvider {
   public List<AmazonCloudFormationStack> list(String accountName, String region) {
     String filter = Keys.getCloudFormationKey("*", region, accountName);
     log.debug("List all stacks with filter {}", filter);
-    return loadResults(cacheView.filterIdentifiers(STACKS.getNs(), filter));
+    return loadResults(cacheView.filterIdentifiers(ON_DEMAND.getNs(), filter));
   }
 
   public Optional<AmazonCloudFormationStack> get(String stackId) {
     String filter = Keys.getCloudFormationKey(stackId, "*", "*");
     log.debug("Get stack with filter {}", filter);
-    return loadResults(cacheView.filterIdentifiers(STACKS.getNs(), filter)).stream().findFirst();
+    return loadResults(cacheView.filterIdentifiers(ON_DEMAND.getNs(), filter)).stream().findFirst();
   }
 
   List<AmazonCloudFormationStack> loadResults(Collection<String> identifiers) {
-    return cacheView.getAll(STACKS.getNs(), identifiers, RelationshipCacheFilter.none()).stream()
+    return cacheView.getAll(ON_DEMAND.getNs(), identifiers, RelationshipCacheFilter.none()).stream()
         .map(
             data -> {
               log.debug("Cloud formation cached properties {}", data.getAttributes());

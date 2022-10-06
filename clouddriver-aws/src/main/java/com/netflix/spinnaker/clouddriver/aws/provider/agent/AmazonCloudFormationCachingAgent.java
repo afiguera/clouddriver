@@ -181,19 +181,13 @@ public class AmazonCloudFormationCachingAgent
 
   @Override
   public CacheResult loadData(ProviderCache providerCache) {
-    log.info(getAgentType() + ": agent is starting");
+    log.info(getAgentType() + ": Forcibly disabling caching agent");
 
     List<String> keepInOnDemand = new ArrayList<>();
     List<String> evictFromOnDemand = new ArrayList<>();
     Long start = System.currentTimeMillis();
 
-    CacheResult stacks = queryStacks(providerCache, new DescribeStacksRequest(), false);
-    Collection<String> keys =
-        stacks.getCacheResults().get("stacks").stream()
-            .map(cachedata -> cachedata.getId())
-            .collect(Collectors.toList());
-
-    Collection<CacheData> onDemandEntries = providerCache.getAll(ON_DEMAND.getNs(), keys);
+    Collection<CacheData> onDemandEntries = providerCache.getAll(ON_DEMAND.getNs());
     if (!CollectionUtils.isEmpty(onDemandEntries)) {
       onDemandEntries.forEach(
           cacheData -> {
@@ -219,7 +213,9 @@ public class AmazonCloudFormationCachingAgent
     }
     providerCache.evictDeletedItems(ON_DEMAND.getNs(), evictFromOnDemand);
 
-    return stacks;
+    HashMap<String, Collection<CacheData>> result = new HashMap<>();
+    // partialResult=true to not evict all the data in the table
+    return new DefaultCacheResult(result, true);
   }
 
   public CacheResult queryStacks(
